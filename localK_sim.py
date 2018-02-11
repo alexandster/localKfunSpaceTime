@@ -1,6 +1,7 @@
 #import modules
 import sys
 import numpy as np
+import settings as sett
 from datetime import datetime
 
 #------------------------------------------------------------------------------------------------------------
@@ -10,7 +11,7 @@ def dist(p1,p2):
 
 #------------------------------------------------------------------------------------------------------------
 num = sys.argv[1]		#simulation number
-
+# num = str(3)
 #------------------------------------------------------------------------------------------------------------
 #read sample points
 inArr1 = np.loadtxt('files/grid.txt',delimiter=',')
@@ -22,17 +23,15 @@ leninArr2 = inArr2.shape[0]
 
 headArr = np.zeros((leninArr1, 4))
 
-#------------------------------------------------------------------------------------------------------------
-#parameters
-hs_max = 10		#maximum spatial bandwidth
-hs_binsize = 2	#spatial bin size
-ht_max = 4		#maximum temporal bandwidth (temporal bin size is 1)
+# ------------------------------------------------------------------------------------------------------------
+#initialize global variables
+sett.init()
 
-#------------------------------------------------------------------------------------------------------------
-#dimensions
-dim1 = leninArr1			#number of sample points
-dim2 = hs_max/hs_binsize	#number of spatial bins
-dim3 = ht_max+1				#number of temporal bins
+# ------------------------------------------------------------------------------------------------------------
+# dimensions
+dim1 = leninArr1    # number of sample points
+dim2 = sett.hs_numbins   # number of spatial bins
+dim3 = sett.ht_numbins   # number of temporal bins
 
 #------------------------------------------------------------------------------------------------------------
 #initialize 3D zero-array: each sample point has counts for spatial and temporal bins
@@ -54,10 +53,10 @@ while a < leninArr1:     #for each sample point
 
         d = dist(inArr1[a],inArr2[b])
         
-        if d[0] < hs_max and d[1] <= ht_max:
+        if d[0] < sett.hs_max and d[1] <= sett.ht_max:
   
             #compute bin
-            bwCount_s = int(d[0]/hs_binsize)	
+            bwCount_s = int(d[0]/sett.hs_binsize)
             bwCount_t = int(d[1])		
             
             intArr[a][bwCount_s][bwCount_t] += 1	#increase count for sample point in corresponding bin
@@ -80,7 +79,7 @@ reArr = np.reshape(sumArr2,(dim1, dim2*dim3))
 
 #local K-function: concatenate counts with header (contains ID and coordinates)
 outArr = np.concatenate((headArr, reArr), axis=1)
-np.savetxt('outputs/sim/localk' + num + '.txt', outArr)
+np.savetxt('outputs/sim/localk' + num + '.txt', outArr, fmt='%1.2f',delimiter=',')
 
 #global ST K-function: take sum over all local k functions
 #sumArr3 = np.sum(sumArr2, axis=0)
@@ -90,18 +89,3 @@ np.savetxt('outputs/sim/localk' + num + '.txt', outArr)
 endTime = datetime.now()
 runTime = endTime - startTime
 print("execution time: ", runTime)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
